@@ -523,9 +523,35 @@
 </footer>
 
 <script>
-  // language toggle
+  // language toggle — base vars
   var html = document.documentElement;
   var buttons = document.querySelectorAll('#langToggle button');
+
+  // destination data (must exist before setLang runs, since setLang calls renderDestCity)
+  var fleets = ['PHENOM 300E','CHALLENGER 650'];
+  var cityNames = {
+    'LEBL': { es: 'Barcelona', en: 'Barcelona' },
+    'LFPB': { es: 'París', en: 'Paris' },
+    'EGGW': { es: 'Londres', en: 'London' },
+    'LPPT': { es: 'Lisboa', en: 'Lisbon' },
+    'LIRA': { es: 'Roma', en: 'Rome' },
+    'GCTS': { es: 'Tenerife', en: 'Tenerife' },
+    'LSZS': { es: 'St. Moritz', en: 'St. Moritz' },
+    'CYYT': { es: "St. John's", en: "St. John's" },
+    'LGSR': { es: 'Santorini', en: 'Santorini' },
+    'OMDB': { es: 'Dubái', en: 'Dubai' },
+    'HKJK': { es: 'Nairobi', en: 'Nairobi' }
+  };
+  var dests = Object.keys(cityNames);
+  var currentDest = dests[0];
+  function renderDestCity(){
+    var dc = document.getElementById('destCode');
+    var city = document.getElementById('destCity');
+    var lang = html.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+    if(dc) dc.textContent = currentDest;
+    if(city && cityNames[currentDest]) city.textContent = '(' + cityNames[currentDest][lang] + ')';
+  }
+
   function translateOptions(l){
     document.querySelectorAll('option[data-es]').forEach(function(opt){
       opt.textContent = l === 'en' ? opt.dataset.en : opt.dataset.es;
@@ -535,7 +561,7 @@
     html.setAttribute('data-lang', l);
     buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.l === l); });
     translateOptions(l);
-    if(typeof renderDestCity === 'function') renderDestCity();
+    renderDestCity();
     try{ localStorage.setItem('nexajet-lang', l); }catch(e){}
   }
   buttons.forEach(function(b){ b.addEventListener('click', function(){ setLang(b.dataset.l); }); });
@@ -569,30 +595,6 @@
   setInterval(tick, 1000);
 
   // rotate fleet label / dest code in flight strip for a bit of life
-  var fleets = ['PHENOM 300E','CHALLENGER 650'];
-  var cityNames = {
-    'LEBL': { es: 'Barcelona', en: 'Barcelona' },
-    'LFPB': { es: 'París', en: 'Paris' },
-    'EGGW': { es: 'Londres', en: 'London' },
-    'LPPT': { es: 'Lisboa', en: 'Lisbon' },
-    'LIRA': { es: 'Roma', en: 'Rome' },
-    'GCTS': { es: 'Tenerife', en: 'Tenerife' },
-    'LSZS': { es: 'St. Moritz', en: 'St. Moritz' },
-        'CYYT': { es: "St. John's", en: "St. John's" },
-    'LGSR': { es: 'Santorini', en: 'Santorini' },
-    'OMDB': { es: 'Dubái', en: 'Dubai' },
-    'HKJK': { es: 'Nairobi', en: 'Nairobi' }
-  };
-  var dests = Object.keys(cityNames);
-  var currentDest = dests[0];
-  function renderDestCity(){
-    var dc = document.getElementById('destCode');
-    var city = document.getElementById('destCity');
-    var lang = html.getAttribute('data-lang') === 'en' ? 'en' : 'es';
-    if(dc) dc.textContent = currentDest;
-    if(city && cityNames[currentDest]) city.textContent = '(' + cityNames[currentDest][lang] + ')';
-  }
-  renderDestCity();
   var i = 0;
   setInterval(function(){
     i = (i+1) % fleets.length;
