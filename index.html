@@ -330,7 +330,7 @@
         <dl class="specs">
           <div class="spec"><dt><span class="es">Alcance</span><span class="en">Range</span></dt><dd>1.971 NM</dd></div>
           <div class="spec"><dt><span class="es">Velocidad</span><span class="en">Speed</span></dt><dd>Mach 0.80</dd></div>
-          <div class="spec"><dt><span class="es">Pasajeros</span><span class="en">Passengers</span></dt><dd>07–09</dd></div>
+          <div class="spec"><dt><span class="es">Pasajeros</span><span class="en">Passengers</span></dt><dd>8 PAX</dd></div>
           <div class="spec"><dt><span class="es">Techo</span><span class="en">Ceiling</span></dt><dd>45.000 ft</dd></div>
         </dl>
         <p class="fleet-note"><span class="es">La aeronave de entrada de NexaJet: eficiente, ágil y perfecta para misiones dentro de la península en una sola sesión de vuelo.</span><span class="en">NexaJet's entry aircraft: efficient, agile, and perfect for peninsula-range missions in a single flight session.</span></p>
@@ -343,7 +343,7 @@
         <dl class="specs">
           <div class="spec"><dt><span class="es">Alcance</span><span class="en">Range</span></dt><dd>4.000 NM</dd></div>
           <div class="spec"><dt><span class="es">Velocidad</span><span class="en">Speed</span></dt><dd>Mach 0.83</dd></div>
-          <div class="spec"><dt><span class="es">Pasajeros</span><span class="en">Passengers</span></dt><dd>Hasta 12</dd></div>
+          <div class="spec"><dt><span class="es">Pasajeros</span><span class="en">Passengers</span></dt><dd>10 PAX</dd></div>
           <div class="spec"><dt><span class="es">Techo</span><span class="en">Ceiling</span></dt><dd>41.000 ft</dd></div>
         </dl>
         <p class="fleet-note"><span class="es">La insignia de NexaJet: cabina de gestión de vuelo completa, misiones transcontinentales y la aeronave de referencia para operación seria en simulador.</span><span class="en">NexaJet's flagship: full flight-management flightdeck, transcontinental missions, and the reference aircraft for serious simmer operation.</span></p>
@@ -482,11 +482,16 @@
           </div>
           <div class="field">
             <label><span class="es">Puesto de interés</span><span class="en">Role of interest</span></label>
-            <select name="puesto">
-              <option><span class="es">Piloto virtual</span><span class="en">Virtual pilot</span></option>
-              <option><span class="es">Despachador de vuelo</span><span class="en">Flight dispatcher</span></option>
-              <option><span class="es">Diseñador de rutas</span><span class="en">Route designer</span></option>
+            <select name="puesto" id="rolePuesto">
+              <option value="pilot" data-es="Piloto virtual" data-en="Virtual pilot">Virtual pilot</option>
+              <option value="dispatcher" data-es="Despachador de vuelo" data-en="Flight dispatcher">Flight dispatcher</option>
+              <option value="router" data-es="Diseñador de rutas" data-en="Route designer">Route designer</option>
             </select>
+          </div>
+          <div class="field" id="pilotAircraftField">
+            <label><span class="es">Avión que te gustaría volar</span><span class="en">Aircraft you'd like to fly</span></label>
+            <input type="text" name="avion_deseado" placeholder="Phenom 300E / Challenger 650 / otro">
+            <div class="sub" style="margin:6px 0 0; font-size:12.5px;"><span class="es">Dinos qué avión tienes en mente — así solo hacemos leasing de lo que realmente se va a volar, sin sobredimensionar la flota.</span><span class="en">Tell us which aircraft you have in mind — that way we only lease what will actually get flown, without oversizing the fleet.</span></div>
           </div>
           <button type="submit" class="btn btn-ghost-dark"><span class="es">Postularme</span><span class="en">Apply</span></button>
         </form>
@@ -514,16 +519,34 @@
   // language toggle
   var html = document.documentElement;
   var buttons = document.querySelectorAll('#langToggle button');
+  function translateOptions(l){
+    document.querySelectorAll('option[data-es]').forEach(function(opt){
+      opt.textContent = l === 'en' ? opt.dataset.en : opt.dataset.es;
+    });
+  }
   function setLang(l){
     html.setAttribute('data-lang', l);
     buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.l === l); });
+    translateOptions(l);
     try{ localStorage.setItem('nexajet-lang', l); }catch(e){}
   }
   buttons.forEach(function(b){ b.addEventListener('click', function(){ setLang(b.dataset.l); }); });
   try{
     var saved = localStorage.getItem('nexajet-lang');
-    if(saved){ setLang(saved); }
-  }catch(e){}
+    setLang(saved || 'en');
+  }catch(e){ setLang('en'); }
+
+  // show "desired aircraft" field only for the Virtual Pilot role
+  var roleSelect = document.getElementById('rolePuesto');
+  var pilotField = document.getElementById('pilotAircraftField');
+  function togglePilotField(){
+    if(!roleSelect || !pilotField) return;
+    pilotField.style.display = roleSelect.value === 'pilot' ? '' : 'none';
+  }
+  if(roleSelect){
+    roleSelect.addEventListener('change', togglePilotField);
+    togglePilotField();
+  }
 
   // Zulu clock
   function tick(){
