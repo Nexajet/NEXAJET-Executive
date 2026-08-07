@@ -156,6 +156,7 @@
     overflow-x:auto;
   }
   .strip-code{color:var(--cream);font-size:20px;font-weight:600;letter-spacing:0.03em;}
+  .strip-city{font-size:11px;font-weight:400;color:var(--steel);letter-spacing:0.02em;margin-left:6px;}
   .strip-route{display:flex;align-items:center;gap:14px;flex:1;min-width:220px;}
   .strip-line{flex:1;height:1px;background:linear-gradient(90deg, var(--steel), var(--red));position:relative;min-width:60px;}
   .strip-line::after{
@@ -300,9 +301,9 @@
   <div class="strip">
     <div class="strip-inner">
       <div class="strip-route">
-        <span class="strip-code">LEMD</span>
+        <span class="strip-code">LEMD<span class="strip-city">(Madrid)</span></span>
         <span class="strip-line"></span>
-        <span class="strip-code" id="destCode">LEBL</span>
+        <span class="strip-code"><span id="destCode">LEBL</span><span class="strip-city" id="destCity">(Barcelona)</span></span>
       </div>
       <span class="strip-sep">/</span>
       <span id="fleetLabel">PHENOM 300E</span>
@@ -433,22 +434,25 @@
       <div class="contact-panel">
         <h3><span class="es">Reservas y cotizaciones</span><span class="en">Bookings &amp; quotes</span></h3>
         <div class="sub"><span class="es">Cuéntanos tu ruta y te respondemos con la aeronave asignada y la tarifa de la misión.</span><span class="en">Tell us your route and we'll reply with the assigned aircraft and mission rate.</span></div>
-        <form action="mailto:nexajet@outlook.com" method="post" enctype="text/plain">
+        <form action="https://formsubmit.co/nexajet@outlook.com" method="POST">
+          <input type="hidden" name="_subject" value="NexaJet — Nueva solicitud de reserva">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="true">
           <div class="field">
             <label><span class="es">Nombre</span><span class="en">Name</span></label>
-            <input type="text" name="nombre" required>
+            <input type="text" name="Nombre" required>
           </div>
           <div class="field">
             <label>Email</label>
-            <input type="email" name="email" required>
+            <input type="email" name="Email" required>
           </div>
           <div class="field">
             <label><span class="es">Ruta (origen — destino)</span><span class="en">Route (origin — destination)</span></label>
-            <input type="text" name="ruta" placeholder="LEMD — LEBL">
+            <input type="text" name="Ruta" placeholder="LEMD — LEBL">
           </div>
           <div class="field">
             <label><span class="es">Mensaje</span><span class="en">Message</span></label>
-            <textarea name="mensaje"></textarea>
+            <textarea name="Mensaje"></textarea>
           </div>
           <button type="submit" class="btn btn-ghost-dark"><span class="es">Enviar solicitud</span><span class="en">Send request</span></button>
         </form>
@@ -471,18 +475,21 @@
             <span class="lvl"><span class="es">ABIERTO</span><span class="en">OPEN</span></span>
           </div>
         </div>
-        <form action="mailto:nexajet@outlook.com" method="post" enctype="text/plain">
+        <form action="https://formsubmit.co/nexajet@outlook.com" method="POST">
+          <input type="hidden" name="_subject" value="NexaJet — Nueva postulación de tripulación">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="true">
           <div class="field">
             <label><span class="es">Nombre</span><span class="en">Name</span></label>
-            <input type="text" name="nombre" required>
+            <input type="text" name="Nombre" required>
           </div>
           <div class="field">
             <label>Email</label>
-            <input type="email" name="email" required>
+            <input type="email" name="Email" required>
           </div>
           <div class="field">
             <label><span class="es">Puesto de interés</span><span class="en">Role of interest</span></label>
-            <select name="puesto" id="rolePuesto">
+            <select name="Puesto" id="rolePuesto">
               <option value="pilot" data-es="Piloto virtual" data-en="Virtual pilot">Virtual pilot</option>
               <option value="dispatcher" data-es="Despachador de vuelo" data-en="Flight dispatcher">Flight dispatcher</option>
               <option value="router" data-es="Diseñador de rutas" data-en="Route designer">Route designer</option>
@@ -490,7 +497,7 @@
           </div>
           <div class="field" id="pilotAircraftField">
             <label><span class="es">Avión que te gustaría volar</span><span class="en">Aircraft you'd like to fly</span></label>
-            <input type="text" name="avion_deseado" placeholder="Phenom 300E / Challenger 650 / otro">
+            <input type="text" name="Avion_deseado" placeholder="Phenom 300E / Challenger 650 / otro">
             <div class="sub" style="margin:6px 0 0; font-size:12.5px;"><span class="es">Dinos qué avión tienes en mente — así solo hacemos leasing de lo que realmente se va a volar, sin sobredimensionar la flota.</span><span class="en">Tell us which aircraft you have in mind — that way we only lease what will actually get flown, without oversizing the fleet.</span></div>
           </div>
           <button type="submit" class="btn btn-ghost-dark"><span class="es">Postularme</span><span class="en">Apply</span></button>
@@ -528,6 +535,7 @@
     html.setAttribute('data-lang', l);
     buttons.forEach(function(b){ b.classList.toggle('active', b.dataset.l === l); });
     translateOptions(l);
+    if(typeof renderDestCity === 'function') renderDestCity();
     try{ localStorage.setItem('nexajet-lang', l); }catch(e){}
   }
   buttons.forEach(function(b){ b.addEventListener('click', function(){ setLang(b.dataset.l); }); });
@@ -562,14 +570,36 @@
 
   // rotate fleet label / dest code in flight strip for a bit of life
   var fleets = ['PHENOM 300E','CHALLENGER 650'];
-  var dests = ['LEBL','LFPB','EGGW','LPPT','LIRA'];
+  var cityNames = {
+    'LEBL': { es: 'Barcelona', en: 'Barcelona' },
+    'LFPB': { es: 'París', en: 'Paris' },
+    'EGGW': { es: 'Londres', en: 'London' },
+    'LPPT': { es: 'Lisboa', en: 'Lisbon' },
+    'LIRA': { es: 'Roma', en: 'Rome' },
+    'GCTS': { es: 'Tenerife', en: 'Tenerife' },
+    'LSZS': { es: 'St. Moritz', en: 'St. Moritz' },
+        'CYYT': { es: "St. John's", en: "St. John's" },
+    'LGSR': { es: 'Santorini', en: 'Santorini' },
+    'OMDB': { es: 'Dubái', en: 'Dubai' },
+    'HKJK': { es: 'Nairobi', en: 'Nairobi' }
+  };
+  var dests = Object.keys(cityNames);
+  var currentDest = dests[0];
+  function renderDestCity(){
+    var dc = document.getElementById('destCode');
+    var city = document.getElementById('destCity');
+    var lang = html.getAttribute('data-lang') === 'en' ? 'en' : 'es';
+    if(dc) dc.textContent = currentDest;
+    if(city && cityNames[currentDest]) city.textContent = '(' + cityNames[currentDest][lang] + ')';
+  }
+  renderDestCity();
   var i = 0;
   setInterval(function(){
     i = (i+1) % fleets.length;
     var fl = document.getElementById('fleetLabel');
-    var dc = document.getElementById('destCode');
     if(fl) fl.textContent = fleets[i];
-    if(dc) dc.textContent = dests[Math.floor(Math.random()*dests.length)];
+    currentDest = dests[Math.floor(Math.random()*dests.length)];
+    renderDestCity();
   }, 6000);
 </script>
 
